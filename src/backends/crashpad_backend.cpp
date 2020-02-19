@@ -85,11 +85,8 @@ void CrashpadBackend::start() {
 
     crashpad::CrashpadClient client;
     std::string url = options->dsn.get_minidump_url();
-    bool success = client.StartHandlerWithAttachments(
-        handler, database, database, url, annotations, file_attachments,
-        arguments,
-        /* restartable */ true,
-        /* asynchronous_start */ false);
+    bool success = client.StartHandlerAtCrash(
+        handler, database, database, url, annotations, arguments);
 
     if (success) {
         SENTRY_LOG("started client handler.");
