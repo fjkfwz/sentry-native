@@ -68,7 +68,6 @@ void LibcurlTransport::send_envelope(Envelope envelope) {
             if (opts->dsn.disabled() || !opts->should_upload()) {
                 return false;
             }
-
             struct curl_slist *headers = nullptr;
             headers = curl_slist_append(headers, "expect:");
             for (auto iter = prepared_request.headers.begin();
@@ -101,10 +100,11 @@ void LibcurlTransport::send_envelope(Envelope envelope) {
             if (!opts->ca_certs.empty()) {
                 curl_easy_setopt(this->m_curl, CURLOPT_CAINFO,
                                  opts->ca_certs.c_str());
+            } else {
+                curl_easy_setopt(this->m_curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_easy_setopt(this->m_curl, CURLOPT_SSL_VERIFYHOST, false);
             }
-
             CURLcode rv = curl_easy_perform(this->m_curl);
-
             if (rv == CURLE_OK) {
                 long response_code;
                 curl_easy_getinfo(this->m_curl, CURLINFO_RESPONSE_CODE,
@@ -114,7 +114,6 @@ void LibcurlTransport::send_envelope(Envelope envelope) {
                                        std::chrono::seconds(info.retry_after);
                 }
             }
-
             curl_slist_free_all(headers);
             return true;
         });
